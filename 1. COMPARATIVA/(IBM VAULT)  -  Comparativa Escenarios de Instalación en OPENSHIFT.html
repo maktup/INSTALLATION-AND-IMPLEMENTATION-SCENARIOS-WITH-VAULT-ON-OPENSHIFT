@@ -1,0 +1,1170 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IBM Vault — Escenarios de Instalación en OpenShift</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #f0f2f5;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: #0f3460;
+    color: #fff;
+    padding: 36px 48px 30px;
+    border-bottom: 4px solid #e2231a;
+  }
+  .page-header .badge {
+    display: inline-block;
+    background: #e2231a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 13px;
+    color: #a8c0d6;
+    max-width: 680px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 28px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    font-size: 11px;
+    color: #7ba8c8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .meta-item strong { color: #c8dde9; font-weight: 600; }
+
+  /* ── BODY WRAP ── */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 48px; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 36px 0 16px;
+  }
+  .section-label .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .pill-helm    { background: #dbeafe; color: #1e40af; }
+  .pill-op      { background: #ede9fe; color: #5b21b6; }
+  .section-label h2 { font-size: 17px; font-weight: 700; color: #0f3460; }
+  .section-label .line { flex: 1; height: 1px; background: #e5e7eb; }
+
+  /* ── CARD GRID ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .card-head-left { display: flex; align-items: center; gap: 12px; }
+  .card-icon {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .icon-helm-desa  { background: #dbeafe; }
+  .icon-helm-prod  { background: #1e40af; }
+  .icon-op-desa    { background: #ede9fe; }
+  .icon-op-prod    { background: #5b21b6; }
+
+  .card-title { font-size: 14px; font-weight: 700; color: #0f3460; }
+  .card-subtitle { font-size: 11px; color: #57606a; margin-top: 1px; }
+
+  .env-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .tag-desa { background: #d1fae5; color: #065f46; }
+  .tag-prod { background: #fee2e2; color: #991b1b; }
+
+  .card-body { padding: 18px 20px; }
+
+  /* ── PROP TABLE ── */
+  .prop-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  .prop-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #57606a;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 0 0 6px;
+  }
+  .prop-table th:last-child { text-align: right; }
+  .prop-table td {
+    padding: 5px 0;
+    font-size: 12.5px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: top;
+  }
+  .prop-table td:first-child {
+    color: #57606a;
+    font-weight: 600;
+    width: 38%;
+    padding-right: 10px;
+    white-space: nowrap;
+  }
+  .prop-table td:last-child { color: #1f2328; }
+
+  /* values */
+  .val-good  { color: #065f46; font-weight: 600; }
+  .val-warn  { color: #92400e; font-weight: 600; }
+  .val-na    { color: #9ca3af; font-style: italic; }
+  .val-blue  { color: #1e40af; font-weight: 600; }
+
+  /* ── CHIP ROW ── */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .chip {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .chip-gray   { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+  .chip-blue   { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+  .chip-green  { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+  .chip-red    { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+  .chip-purple { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+  .chip-yellow { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+  /* ── SECTION LABEL INSIDE CARD ── */
+  .block-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #57606a;
+    margin: 14px 0 7px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* ── PREREQS ── */
+  .prereq-list { list-style: none; }
+  .prereq-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    padding: 3px 0;
+    color: #374151;
+  }
+  .prereq-list li::before {
+    content: "▸";
+    color: #6366f1;
+    font-size: 10px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── SCRIPT CMD ── */
+  .script-box {
+    background: #0f1c2e;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 12px;
+  }
+  .script-box .script-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 5px;
+  }
+  .script-box code {
+    display: block;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11.5px;
+    color: #7dd3fc;
+    line-height: 1.7;
+  }
+  .script-box code .cmd-green  { color: #86efac; }
+  .script-box code .cmd-gray   { color: #94a3b8; }
+  .script-box code .cmd-yellow { color: #fde68a; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section { margin-top: 40px; }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    font-size: 12.5px;
+  }
+  .compare-table thead tr {
+    background: #0f3460;
+    color: #fff;
+  }
+  .compare-table thead th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .compare-table thead th:first-child { width: 18%; }
+  .compare-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .compare-table tbody tr:hover { background: #f0f4ff; }
+  .compare-table tbody td {
+    padding: 9px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+  .compare-table tbody td:first-child {
+    font-weight: 700;
+    color: #374151;
+    border-right: 1px solid #e5e7eb;
+    font-size: 11.5px;
+  }
+  .compare-table .check { color: #059669; font-weight: 700; }
+  .compare-table .cross { color: #dc2626; font-weight: 700; }
+  .compare-table .dash  { color: #9ca3af; }
+
+  /* ── FLOW SECTION ── */
+  .flow-section { margin-top: 40px; }
+  .flow-title { font-size: 15px; font-weight: 700; color: #0f3460; margin-bottom: 14px; }
+  .flow-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .flow-step {
+    padding: 16px 14px;
+    border-right: 1px solid #e5e7eb;
+    position: relative;
+  }
+  .flow-step:last-child { border-right: none; }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .step-title { font-size: 12px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .step-desc  { font-size: 11px; color: #57606a; line-height: 1.5; }
+  .step-script{ font-size: 10px; color: #1e40af; font-family: "Consolas", monospace; margin-top: 5px; }
+
+  /* ── ENGINES SECTION ── */
+  .engines-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .engine-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px;
+    border-top: 3px solid;
+  }
+  .engine-card.kv      { border-top-color: #2563eb; }
+  .engine-card.db      { border-top-color: #0891b2; }
+  .engine-card.transit { border-top-color: #7c3aed; }
+  .engine-card.pki     { border-top-color: #059669; }
+  .engine-name { font-size: 12px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .engine-mount { font-size: 10px; color: #57606a; font-family: monospace; margin-bottom: 8px; }
+  .engine-detail { font-size: 11px; color: #374151; line-height: 1.5; }
+
+  /* ── MIGRATION SECTION ── */
+  .mig-section { margin-top: 40px; }
+  .mig-modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  .mig-mode {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 18px 20px;
+    border-left: 4px solid;
+  }
+  .mig-mode.oc  { border-left-color: #e2231a; }
+  .mig-mode.cli { border-left-color: #0f3460; }
+  .mig-mode-title { font-size: 13px; font-weight: 700; color: #1f2328; margin-bottom: 6px; }
+  .mig-mode-sub   { font-size: 11px; color: #57606a; margin-bottom: 12px; }
+  .mig-list { list-style: none; }
+  .mig-list li { font-size: 12px; color: #374151; padding: 2px 0; }
+  .mig-list li::before { content: "→ "; color: #6366f1; font-weight: 700; }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  @media (max-width: 700px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .engines-grid { grid-template-columns: 1fr 1fr; }
+    .mig-modes { grid-template-columns: 1fr; }
+    .flow-steps { grid-template-columns: 1fr; }
+    .page-header { padding: 24px 20px; }
+    .wrap { padding: 20px 14px 40px; }
+  }
+
+  /* ── PROFESSIONAL UI REFRESH ── */
+  :root {
+    --ink: #161616;
+    --muted: #525252;
+    --line: #e0e0e0;
+    --surface: #ffffff;
+    --canvas: #f4f4f4;
+    --blue: #0f62fe;
+    --blue-dark: #001d6c;
+    --navy: #001141;
+    --purple: #6929c4;
+    --green: #198038;
+    --red: #da1e28;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,29,108,.06);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    color: var(--ink);
+    background:
+      linear-gradient(180deg, #edf5ff 0, var(--canvas) 420px),
+      var(--canvas);
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+  }
+  ::selection { color: #fff; background: var(--blue); }
+  code { font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace; }
+
+  /* Títulos uniformados en mayúsculas */
+  .page-header h1,
+  .section-label h2,
+  .card-title,
+  .block-title,
+  .flow-title,
+  .step-title,
+  .engine-name,
+  .mig-mode-title {
+    text-transform: uppercase;
+  }
+
+  .page-header {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    background: linear-gradient(120deg, #001141 0%, #002d9c 58%, #0f62fe 100%);
+  }
+  .page-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: .26;
+    background-image:
+      linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(90deg, transparent, #000 70%);
+  }
+  .page-header::after {
+    content: "";
+    position: absolute;
+    width: 430px;
+    height: 430px;
+    right: -130px;
+    bottom: -280px;
+    z-index: -1;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 50%;
+    box-shadow: 0 0 0 70px rgba(255,255,255,.05), 0 0 0 140px rgba(255,255,255,.04);
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; padding: 54px 24px 48px; }
+  .brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 34px; }
+  .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255,255,255,.45);
+    background: rgba(255,255,255,.1);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+  .brand-name { font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+  .brand-kicker { color: #a6c8ff; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .page-header .badge {
+    margin-bottom: 16px;
+    padding: 5px 10px;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    backdrop-filter: blur(8px);
+  }
+  .page-header h1 {
+    max-width: 780px;
+    margin-bottom: 15px;
+    font-size: clamp(30px, 5vw, 52px);
+    line-height: 1.04;
+    letter-spacing: -.045em;
+  }
+  .page-header p { max-width: 760px; color: #d0e2ff; font-size: 15px; line-height: 1.65; }
+  .hero-facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .hero-fact {
+    min-width: 135px;
+    padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.2);
+    background: rgba(0,17,65,.3);
+    backdrop-filter: blur(8px);
+  }
+  .hero-fact strong { display: block; color: #fff; font-size: 18px; line-height: 1.15; }
+  .hero-fact span { color: #a6c8ff; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+
+  .wrap { max-width: 1100px; padding: 46px 24px 64px; }
+  .section-label { margin: 46px 0 18px; }
+  .section-label:first-child { margin-top: 0; }
+  .section-label h2 { color: var(--ink); font-size: 18px; letter-spacing: -.015em; }
+  .section-label .line { background: var(--line); }
+  .section-label .pill { border-radius: 999px; }
+  .pill-helm { background: #d0e2ff; color: #002d9c; }
+  .pill-op { background: #e8daff; color: #491d8b; }
+
+  .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: stretch; }
+  .card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    box-shadow: var(--shadow);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 16px 35px rgba(0,29,108,.11); }
+  .card-head { min-height: 84px; padding: 18px 20px; background: #f8fbff; border-bottom-color: var(--line); }
+  .card:nth-child(2) .card-head { background: #f3f7ff; }
+  .card-icon { width: 42px; height: 42px; border-radius: 2px; }
+  .icon-helm-desa { color: #0043ce; background: #d0e2ff; }
+  .icon-helm-prod { color: #fff; background: #0043ce; }
+  .icon-op-desa { color: #6929c4; background: #e8daff; }
+  .icon-op-prod { color: #fff; background: #6929c4; }
+  .card-title { color: var(--ink); font-size: 13px; letter-spacing: .01em; }
+  .card-subtitle { color: var(--muted); font-size: 11px; }
+  .env-tag { border-radius: 999px; white-space: nowrap; }
+  .card-body { display: flex; flex: 1; flex-direction: column; padding: 20px; }
+  .block-title { margin-top: 18px; color: #6f6f6f; border-bottom-color: var(--line); }
+  .block-title:first-child { margin-top: 0; }
+
+  .prop-table { margin-bottom: 10px; }
+  .prop-table th { color: #6f6f6f; border-bottom-color: #c6c6c6; }
+  .prop-table td { padding: 7px 0; border-bottom-color: #ededed; }
+  .prop-table tr:last-child td { border-bottom: 0; }
+  .prop-table td:first-child { color: var(--muted); white-space: normal; }
+  .prereq-list li { padding: 4px 0; }
+  .prereq-list li::before { content: ""; width: 5px; height: 5px; margin: 8px 4px 0 0; background: var(--blue); border-radius: 50%; }
+  .prereq-list code, .mig-mode code { padding: 1px 4px; color: #0043ce; background: #edf5ff; border-radius: 2px; }
+  .chip-row { margin-top: auto !important; padding-top: 15px; }
+  .chip { border-radius: 999px; }
+  .script-box { overflow-x: auto; margin-top: 4px; padding: 14px 16px; border: 1px solid #26364d; border-radius: 2px; background: #161616; }
+  .script-box code { min-width: max-content; font-size: 11px; }
+
+  .compare-section, .mig-section { margin-top: 52px; }
+  .compare-table { display: table; border-radius: 2px; box-shadow: var(--shadow); }
+  .compare-table thead tr { background: var(--navy); }
+  .compare-table thead th { padding: 14px 16px; }
+  .compare-table tbody td { padding: 11px 16px; }
+  .compare-table tbody tr:nth-child(even) { background: #f4f7fb; }
+  .compare-table tbody tr:hover { background: #eaf2ff; }
+
+  .mig-modes { gap: 20px; }
+  .mig-mode { border-radius: 2px; box-shadow: var(--shadow); }
+  .mig-mode.oc { border-left-color: var(--red); }
+  .mig-mode.cli { border-left-color: var(--blue); }
+  .mig-mode-title { font-size: 14px; }
+
+  .page-footer { margin: 0; padding: 24px; border: 0; color: #a8a8a8; background: #161616; }
+  .page-footer p::before { content: "IBM Vault · "; color: #fff; font-weight: 600; }
+
+  @media (max-width: 860px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .compare-section { overflow-x: auto; padding-bottom: 8px; }
+    .compare-table { min-width: 820px; }
+  }
+  @media (max-width: 700px) {
+    .header-inner { padding: 34px 20px 36px; }
+    .brand-row { margin-bottom: 26px; }
+    .page-header h1 { font-size: 34px; }
+    .page-header p { font-size: 14px; }
+    .hero-fact { min-width: calc(50% - 5px); }
+    .wrap { padding: 30px 14px 48px; }
+    .section-label { align-items: flex-start; flex-wrap: wrap; margin-top: 38px; }
+    .section-label .line { flex-basis: 100%; }
+    .card-head { align-items: flex-start; }
+    .card-head-left { align-items: flex-start; }
+    .mig-modes { grid-template-columns: 1fr; }
+  }
+  /* ── PDF / PRINT LAYOUT ── */
+  @page {
+    size: A4 landscape;
+    margin: 11mm 10mm 14mm;
+    @bottom-left {
+      content: "IBM VAULT · GUÍA DE INSTALACIÓN EN OPENSHIFT";
+      color: #6f6f6f;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      font-size: 7pt;
+      letter-spacing: .08em;
+    }
+    @bottom-right {
+      content: "PÁGINA " counter(page) " DE " counter(pages);
+      color: #6f6f6f;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      font-size: 7pt;
+      letter-spacing: .08em;
+    }
+  }
+  @media print {
+    html, body { margin: 0; padding: 0; background: #fff; }
+    body {
+      font-size: 7.4pt;
+      line-height: 1.24;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .page-header {
+      display: flex;
+      min-height: 177mm;
+      align-items: center;
+      page-break-after: always;
+      break-after: page;
+    }
+    .header-inner { width: 100%; max-width: none; padding: 22mm 24mm; }
+    .brand-row { margin-bottom: 15mm; }
+    .page-header h1 { max-width: 205mm; font-size: 30pt; }
+    .page-header p { max-width: 205mm; font-size: 10pt; }
+    .hero-facts { margin-top: 10mm; }
+    .hero-fact { min-width: 42mm; padding: 4mm 5mm; }
+
+    .wrap { max-width: none; margin: 0; padding: 0; }
+    .section-label { margin: 0 0 2.5mm; break-after: avoid; page-break-after: avoid; }
+    .section-label h2 { font-size: 11pt; }
+    .section-label .pill { padding: 1.2mm 4mm; font-size: 7.5pt; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4mm;
+      align-items: stretch;
+      page-break-after: always;
+      break-after: page;
+    }
+    .card {
+      border-color: #c6c6c6;
+      border-radius: 0;
+      box-shadow: none;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .card:hover { transform: none; box-shadow: none; }
+    .card-head { min-height: 14mm; padding: 2mm 3mm; }
+    .card-icon { width: 8mm; height: 8mm; font-size: 9pt; }
+    .card-title { font-size: 7.5pt; }
+    .card-subtitle { font-size: 6.3pt; }
+    .env-tag { padding: .6mm 2mm; font-size: 6pt; }
+    .card-body { padding: 2mm 3mm; }
+    .block-title { margin: 1.7mm 0 .7mm; padding-bottom: .6mm; font-size: 6.1pt; }
+    .prop-table { margin-bottom: .6mm; }
+    .prop-table th { padding-bottom: .6mm; font-size: 5.8pt; }
+    .prop-table td { padding: .72mm 0; font-size: 6.8pt; }
+    .prereq-list li { gap: 1mm; padding: .3mm 0; font-size: 6.55pt; }
+    .prereq-list li::before { margin-top: 1.25mm; }
+    .chip-row { gap: 1mm; padding-top: 1.4mm; margin-bottom: 1.3mm; }
+    .chip { padding: .5mm 1.6mm; font-size: 5.9pt; }
+    .script-box { margin-top: 0; padding: 1.7mm 2.2mm; border-radius: 0; }
+    .script-box .script-label { margin-bottom: .6mm; font-size: 5.5pt; }
+    .script-box code { min-width: 0; white-space: normal; overflow-wrap: anywhere; font-size: 5.9pt; line-height: 1.3; }
+
+    .compare-section {
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+      page-break-before: auto;
+      break-before: auto;
+      page-break-after: always;
+      break-after: page;
+    }
+    .compare-table { display: table; min-width: 0; box-shadow: none; font-size: 7.2pt; }
+    .compare-table thead { display: table-header-group; }
+    .compare-table tr { break-inside: avoid; page-break-inside: avoid; }
+    .compare-table thead th { padding: 2.2mm 2.6mm; font-size: 6.4pt; }
+    .compare-table tbody td { padding: 1.55mm 2.6mm; }
+    .compare-table tbody td:first-child { font-size: 6.8pt; }
+
+    .mig-section { margin: 0; padding: 0; }
+    .mig-modes { gap: 5mm; margin-top: 3mm; }
+    .mig-mode { padding: 4mm 5mm; box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+    .mig-mode-title { font-size: 9pt; }
+    .mig-mode-sub, .mig-list li { font-size: 7.6pt; }
+    .mig-section > .script-box { margin-top: 4mm !important; }
+    .page-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="page-header">
+  <div class="header-inner">
+    <div class="brand-row">
+      <div class="brand-mark">IBM</div>
+      <div><div class="brand-name">IBM Vault</div><div class="brand-kicker">Red Hat OpenShift</div></div>
+    </div>
+    <div class="badge">Guía técnica · Instalación</div>
+    <h1>Escenarios de instalación en OpenShift</h1>
+    <p>Comparativa técnica de cuatro escenarios de despliegue de HashiCorp / IBM Vault sobre Red Hat OpenShift mediante Helm y OpenShift Operator, para entornos de desarrollo y producción.</p>
+    <div class="hero-facts" aria-label="Resumen de la guía">
+      <div class="hero-fact"><strong>4</strong><span>Escenarios</span></div>
+      <div class="hero-fact"><strong>2</strong><span>Modalidades</span></div>
+      <div class="hero-fact"><strong>HA + TLS</strong><span>Preparado para PROD</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  
+  <div class="section-label">
+    <span class="pill pill-helm">⎈ Helm</span>
+    <h2>Instalación mediante <font color='red'>(Helm Chart)</font></h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card-grid">
+
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-icon icon-helm-desa">⎈</div>
+          <div>
+            <div class="card-title">INSTALACIÓN HELM - (DESARROLLO)</div>
+            <div class="card-subtitle">Single-pod · Dev Mode · Sin persistencia</div>
+          </div>
+        </div>
+        <span class="env-tag tag-desa">DESA</span>
+      </div>
+      <div class="card-body">
+
+        <div class="block-title">Características</div>
+        <table class="prop-table">
+          <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Réplicas</td><td><span class="val-warn">1 pod (sin HA)</span></td></tr>
+            <tr><td>Modo Vault</td><td><span class="val-warn">dev mode — token root fijo "root"</span></td></tr>
+            <tr><td>TLS</td><td><span class="val-warn">Deshabilitado — HTTP 8200</span></td></tr>
+            <tr><td>Unseal</td><td><span class="val-warn">Automático (dev mode)</span></td></tr>
+            <tr><td>Persistencia</td><td><span class="val-warn">Ninguna — datos en memoria</span></td></tr>
+            <tr><td>Route</td><td>HTTP edge (router OCP)</td></tr>
+            <tr><td>Agent Injector</td><td><span class="val-good">Habilitado</span></td></tr>
+            <tr><td>Audit Log</td><td><span class="val-na">No configurado</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Requerimientos de Infraestructura</div>
+        <table class="prop-table">
+          <thead><tr><th>Recurso</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>CPU request/limit</td><td>100m / 250m</td></tr>
+            <tr><td>RAM request/limit</td><td>128Mi / 256Mi</td></tr>
+            <tr><td>Storage</td><td><span class="val-na">Ninguno (datos en memoria)</span></td></tr>
+            <tr><td>Nodos mínimos</td><td>1 worker</td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Prerrequisitos</div>
+        <ul class="prereq-list">
+          <li>Namespace creado: <code>oc create namespace vault</code></li>
+          <li>IBM Entitlement Key aplicado en el namespace</li>
+          <li>Autenticación activa: <code>oc login ...</code></li>
+          <li>Helm CLI instalado en el host</li>
+          <li>Repo Hashicorp: <code>helm repo add hashicorp https://helm.releases.hashicorp.com</code></li>
+        </ul>
+
+        <div class="chip-row" style="margin-top:12px">
+          <span class="chip chip-yellow">⚠ Sin HA</span>
+          <span class="chip chip-yellow">⚠ Datos volátiles</span>
+          <span class="chip chip-green">✓ Rápido de desplegar</span>
+          <span class="chip chip-blue">Solo pruebas</span>
+        </div>
+
+        <div class="script-box">
+          <div class="script-label">Comandos de uso</div>
+          <code>
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Helm]_DESA.sh</span> <span class="cmd-gray">--modalidad=install</span><br />
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Helm]_DESA.sh</span> <span class="cmd-gray">--modalidad=delete</span>
+          </code>
+        </div>
+
+      </div>
+    </div>
+
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-icon icon-helm-prod">⎈</div>
+          <div>
+            <div class="card-title">INSTALACIÓN HELM - (PRODUCCIÓN)</div>
+            <div class="card-subtitle">HA Raft · 3 réplicas · TLS · PVC persistente</div>
+          </div>
+        </div>
+        <span class="env-tag tag-prod">PROD</span>
+      </div>
+      <div class="card-body">
+
+        <div class="block-title">Características</div>
+        <table class="prop-table">
+          <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Réplicas</td><td><span class="val-good">3 pods (HA Raft integrated storage)</span></td></tr>
+            <tr><td>Modo Vault</td><td><span class="val-good">Server HA — token root por unseal</span></td></tr>
+            <tr><td>TLS</td><td><span class="val-good">Habilitado — cert x509 autofirmado (openssl)</span></td></tr>
+            <tr><td>Unseal</td><td>5 claves / threshold 3</td></tr>
+            <tr><td>Persistencia</td><td><span class="val-good">10Gi data + 5Gi audit por nodo</span></td></tr>
+            <tr><td>Route</td><td><span class="val-good">Passthrough HTTPS (TLS al pod)</span></td></tr>
+            <tr><td>Agent Injector</td><td><span class="val-good">Habilitado</span></td></tr>
+            <tr><td>PodDisruptionBudget</td><td>maxUnavailable = 1</td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Requerimientos de Infraestructura</div>
+        <table class="prop-table">
+          <thead><tr><th>Recurso</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>CPU Vault (×3)</td><td>250m request / 500m limit por nodo</td></tr>
+            <tr><td>CPU Injector</td><td>50m request / 250m limit</td></tr>
+            <tr><td>RAM Vault (×3)</td><td>256Mi request / 512Mi limit por nodo</td></tr>
+            <tr><td>RAM Injector</td><td>64Mi request / 128Mi limit</td></tr>
+            <tr><td>Storage total</td><td><span class="val-blue">45Gi (3×10Gi data + 3×5Gi audit)</span></td></tr>
+            <tr><td>Nodos mínimos</td><td><span class="val-blue">3 workers (topologyKey hostname)</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Prerrequisitos</div>
+        <ul class="prereq-list">
+          <li>Namespace creado: <code>oc create namespace vault</code></li>
+          <li>IBM Entitlement Key aplicado en el namespace</li>
+          <li>Autenticación activa: <code>oc login ...</code></li>
+          <li>Helm CLI instalado + repo Hashicorp agregado</li>
+          <li>StorageClass <code>ocs-storagecluster-ceph-rbd</code> disponible</li>
+        </ul>
+
+        <div class="chip-row" style="margin-top:12px">
+          <span class="chip chip-green">✓ Alta disponibilidad</span>
+          <span class="chip chip-green">✓ TLS end-to-end</span>
+          <span class="chip chip-green">✓ Datos persistentes</span>
+          <span class="chip chip-blue">Audit log</span>
+        </div>
+
+        <div class="script-box">
+          <div class="script-label">Comandos de uso</div>
+          <code>
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Helm]_PROD.sh</span> <span class="cmd-gray">--modalidad=install</span><br />
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Helm]_PROD.sh</span> <span class="cmd-gray">--modalidad=delete</span>
+          </code>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  
+  <div class="section-label">
+    <span class="pill pill-op">⬡ Operator</span>
+    <h2>Instalación mediante <font color='red'>(OpenShift Operator)</font></h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="card-grid">
+
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-icon icon-op-desa">⬡</div>
+          <div>
+            <div class="card-title">INSTALACIÓN OPENSHIFT OPERATOR - (DESARROLLO)</div>
+            <div class="card-subtitle">Single-node Raft · Edge TLS · PVC mínimo</div>
+          </div>
+        </div>
+        <span class="env-tag tag-desa">DESA</span>
+      </div>
+      <div class="card-body">
+
+        <div class="block-title">Características</div>
+        <table class="prop-table">
+          <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Réplicas</td><td><span class="val-warn">1 pod (single-node Raft, sin HA)</span></td></tr>
+            <tr><td>Modo Vault</td><td>Server Raft — 1 unseal key / threshold 1</td></tr>
+            <tr><td>TLS</td><td><span class="val-warn">tls_disable=true — HTTP interno 8200</span></td></tr>
+            <tr><td>Route</td><td>Edge HTTPS (router OCP termina TLS)</td></tr>
+            <tr><td>Persistencia</td><td>2Gi data únicamente (sin PVC audit)</td></tr>
+            <tr><td>VaultConnection</td><td><span class="val-good">CRD + VaultAuth configurados</span></td></tr>
+            <tr><td>Audit Log PVC</td><td><span class="val-na">No configurado</span></td></tr>
+            <tr><td>Credenciales</td><td>Secret K8s con init keys</td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Requerimientos de Infraestructura</div>
+        <table class="prop-table">
+          <thead><tr><th>Recurso</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>CPU request/limit</td><td>100m / 250m</td></tr>
+            <tr><td>RAM request/limit</td><td>128Mi / 256Mi</td></tr>
+            <tr><td>Storage</td><td>1 × 2Gi (ocs-storagecluster-ceph-rbd)</td></tr>
+            <tr><td>Nodos mínimos</td><td>1 worker (single-node)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Prerrequisitos</div>
+        <ul class="prereq-list">
+          <li>Namespace creado: <code>oc create namespace vault</code></li>
+          <li>IBM Entitlement Key aplicado en el namespace</li>
+          <li>Autenticación activa: <code>oc login ...</code></li>
+          <li><strong>Operator instalado:</strong> <code>vault-secrets-operator</code> en todos los namespaces</li>
+          <li>CRDs disponibles: VaultConnection, VaultAuth, VaultStaticSecret</li>
+        </ul>
+
+        <div class="chip-row" style="margin-top:12px">
+          <span class="chip chip-purple">⬡ Operator managed</span>
+          <span class="chip chip-yellow">⚠ Sin HA</span>
+          <span class="chip chip-green">✓ CRDs nativos OCP</span>
+          <span class="chip chip-blue">Solo pruebas</span>
+        </div>
+
+        <div class="script-box">
+          <div class="script-label">Comandos de uso</div>
+          <code>
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Operator]_DESA.sh</span> <span class="cmd-gray">--modalidad=install</span><br />
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Operator]_DESA.sh</span> <span class="cmd-gray">--modalidad=delete</span>
+          </code>
+        </div>
+
+      </div>
+    </div>
+
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-icon icon-op-prod">⬡</div>
+          <div>
+            <div class="card-title">INSTALACIÓN OPENSHIFT OPERATOR - (PRODUCCIÓN)</div>
+            <div class="card-subtitle">HA Raft · 3 réplicas · TLS CA ubi9 · Kubernetes Auth</div>
+          </div>
+        </div>
+        <span class="env-tag tag-prod">PROD</span>
+      </div>
+      <div class="card-body">
+
+        <div class="block-title">Características</div>
+        <table class="prop-table">
+          <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>Réplicas</td><td><span class="val-good">3 pods (HA Raft integrated storage)</span></td></tr>
+            <tr><td>Modo Vault</td><td><span class="val-good">Server HA — 5 unseal keys / threshold 3</span></td></tr>
+            <tr><td>TLS</td><td><span class="val-good">Habilitado — CA + cert generados por pod ubi9</span></td></tr>
+            <tr><td>Route</td><td><span class="val-good">Passthrough HTTPS (TLS directo al pod)</span></td></tr>
+            <tr><td>Persistencia</td><td><span class="val-good">10Gi data + 5Gi audit por nodo</span></td></tr>
+            <tr><td>VaultConnection</td><td><span class="val-good">CRD + VaultAuth + Kubernetes auth method</span></td></tr>
+            <tr><td>Credenciales</td><td>Secret K8s: <code>vault-init-credentials</code></td></tr>
+            <tr><td>VSO Namespace</td><td><code>vault-secrets-operator-system</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Requerimientos de Infraestructura</div>
+        <table class="prop-table">
+          <thead><tr><th>Recurso</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>CPU (×3 nodos)</td><td>250m request / 500m limit por nodo</td></tr>
+            <tr><td>RAM (×3 nodos)</td><td>256Mi request / 512Mi limit por nodo</td></tr>
+            <tr><td>Storage total</td><td><span class="val-blue">45Gi (3×10Gi data + 3×5Gi audit)</span></td></tr>
+            <tr><td>Nodos mínimos</td><td><span class="val-blue">3 workers (distribución HA Raft)</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="block-title">Prerrequisitos</div>
+        <ul class="prereq-list">
+          <li>Namespace creado: <code>oc create namespace vault</code></li>
+          <li>IBM Entitlement Key aplicado en el namespace</li>
+          <li>Autenticación activa: <code>oc login ...</code></li>
+          <li><strong>Operator instalado:</strong> <code>vault-secrets-operator</code> en todos los namespaces</li>
+          <li>CRDs: VaultConnection, VaultAuth, VaultStaticSecret disponibles en el clúster</li>
+          <li>StorageClass <code>ocs-storagecluster-ceph-rbd</code> disponible</li>
+        </ul>
+
+        <div class="chip-row" style="margin-top:12px">
+          <span class="chip chip-purple">⬡ Operator managed</span>
+          <span class="chip chip-green">✓ Alta disponibilidad</span>
+          <span class="chip chip-green">✓ TLS end-to-end</span>
+          <span class="chip chip-green">✓ K8s Auth</span>
+        </div>
+
+        <div class="script-box">
+          <div class="script-label">Comandos de uso</div>
+          <code>
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Operator]_PROD.sh</span> <span class="cmd-gray">--modalidad=install</span><br />
+            <span class="cmd-green">sh</span> <span class="cmd-yellow">./1_Script_Instalacion_Vault_[Operator]_PROD.sh</span> <span class="cmd-gray">--modalidad=delete</span>
+          </code>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  
+  <div class="compare-section">
+    <div class="section-label">
+      <h2>Comparativa de los cuatro escenarios</h2>
+      <div class="line"></div>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>CARACTERÍSTICA</th>
+          <th>HELM (DESA)</th>
+          <th>HELM (PROD)</th>
+          <th>OPERATOR (DESA)</th>
+          <th>OPERATOR (PROD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Alta Disponibilidad (HA)</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ 3 réplicas</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ 3 réplicas</span></td>
+        </tr>
+        <tr>
+          <td>TLS habilitado</td>
+          <td><span class="cross">✗ HTTP</span></td>
+          <td><span class="check">✓ x509 openssl</span></td>
+          <td><span class="cross">✗ tls_disable</span></td>
+          <td><span class="check">✓ CA ubi9</span></td>
+        </tr>
+        <tr>
+          <td>Datos persistentes</td>
+          <td><span class="cross">✗ Memoria</span></td>
+          <td><span class="check">✓ 45Gi PVC</span></td>
+          <td><span class="check">✓ 2Gi PVC</span></td>
+          <td><span class="check">✓ 45Gi PVC</span></td>
+        </tr>
+        <tr>
+          <td>Unseal automático</td>
+          <td><span class="check">✓ Dev mode</span></td>
+          <td><span class="cross">✗ Manual (5 claves)</span></td>
+          <td><span class="cross">✗ Manual (1 clave)</span></td>
+          <td><span class="cross">✗ Manual (5 claves)</span></td>
+        </tr>
+        <tr>
+          <td>Audit Log PVC</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ 5Gi × 3</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ 5Gi × 3</span></td>
+        </tr>
+        <tr>
+          <td>Route tipo</td>
+          <td>HTTP edge</td>
+          <td>Passthrough HTTPS</td>
+          <td>Edge HTTPS</td>
+          <td>Passthrough HTTPS</td>
+        </tr>
+        <tr>
+          <td>Agent Injector</td>
+          <td><span class="check">✓ Habilitado</span></td>
+          <td><span class="check">✓ Habilitado</span></td>
+          <td><span class="dash">—</span></td>
+          <td><span class="dash">—</span></td>
+        </tr>
+        <tr>
+          <td>CRDs Operator (VSO)</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ VaultConnection/Auth</span></td>
+          <td><span class="check">✓ VaultConnection/Auth/K8s</span></td>
+        </tr>
+        <tr>
+          <td>Kubernetes Auth Method</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ Configurado</span></td>
+        </tr>
+        <tr>
+          <td>PodDisruptionBudget</td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ maxUnavailable=1</span></td>
+          <td><span class="cross">✗ No</span></td>
+          <td><span class="check">✓ Implícito por Operator</span></td>
+        </tr>
+        <tr>
+          <td>CPU total (request)</td>
+          <td>100m</td>
+          <td>800m (3×250m + injector)</td>
+          <td>100m</td>
+          <td>750m (3×250m)</td>
+        </tr>
+        <tr>
+          <td>RAM total (request)</td>
+          <td>128Mi</td>
+          <td>832Mi (3×256Mi + injector)</td>
+          <td>128Mi</td>
+          <td>768Mi (3×256Mi)</td>
+        </tr>
+        <tr>
+          <td>Storage total</td>
+          <td class="dash">—</td>
+          <td>45Gi</td>
+          <td>2Gi</td>
+          <td>45Gi</td>
+        </tr>
+        <tr>
+          <td>Herramienta requerida</td>
+          <td>Helm CLI + oc</td>
+          <td>Helm CLI + oc</td>
+          <td>oc (solo)</td>
+          <td>oc (solo)</td>
+        </tr>
+        <tr>
+          <td>Uso recomendado</td>
+          <td>Pruebas rápidas</td>
+          <td>Producción Helm</td>
+          <td>Desarrollo OCP nativo</td>
+          <td>Producción OCP nativo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="mig-section">
+    <div class="section-label">
+      <h2>Migración entre instancias Vault</h2>
+      <div class="line"></div>
+    </div>
+    <div class="mig-modes">
+      <div class="mig-mode oc">
+        <div class="mig-mode-title">Modo oc-exec <span class="chip chip-red" style="font-size:10px;padding:2px 7px">Mismo Cluster</span></div>
+        <div class="mig-mode-sub">Ambas instancias Vault en el mismo clúster OpenShift. Usa <code>oc exec -i &lt;pod&gt;</code> para ejecutar comandos dentro del pod.</div>
+        <ul class="mig-list">
+          <li>Requiere: <code>oc login</code> activo</li>
+          <li>Parámetros: NS_ORIGEN, POD_ORIGEN, NS_DESTINO, POD_DESTINO</li>
+          <li>Sin vault CLI en el host</li>
+          <li>Vault escucha en <code>127.0.0.1:8200</code> interno</li>
+        </ul>
+      </div>
+      <div class="mig-mode cli">
+        <div class="mig-mode-title">Modo vault-cli <span class="chip chip-blue" style="font-size:10px;padding:2px 7px">Distintos Clusters</span></div>
+        <div class="mig-mode-sub">Vaults en clusters distintos, clouds distintos o cualquier endpoint HTTPS accesible. Usa el CLI <code>vault</code> instalado en el host.</div>
+        <ul class="mig-list">
+          <li>Requiere: vault CLI instalado en el host</li>
+          <li>Parámetros: ADDR_ORIGEN, ADDR_DESTINO (HTTPS)</li>
+          <li>Compatible con TechZone, AWS, Azure, on-prem</li>
+          <li>No requiere <code>oc login</code> ni acceso a pods</li>
+        </ul>
+      </div>
+    </div>
+    <div class="script-box" style="margin-top:14px">
+      <div class="script-label">Configuración rápida para distintos endpoints</div>
+      <code>
+        <span class="cmd-gray"># En el script: cambiar solo estas líneas</span><br />
+        <span class="cmd-yellow">MODO_CONEXION</span>=<span class="cmd-green">"vault-cli"</span><br />
+        <span class="cmd-yellow">ADDR_ORIGEN</span>=<span class="cmd-green">"https://vault-ui-vault.apps.cluster-origen.techzone.ibm.com"</span><br />
+        <span class="cmd-yellow">ADDR_DESTINO</span>=<span class="cmd-green">"https://vault-ui-vault.apps.cluster-destino.techzone.ibm.com"</span><br />
+        <span class="cmd-yellow">TOKEN_ORIGEN</span>=<span class="cmd-green">"hvs.xxxx"</span><br />
+        <span class="cmd-yellow">TOKEN_DESTINO</span>=<span class="cmd-green">"hvs.yyyy"</span>
+      </code>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <p>Guía de escenarios de instalación en OpenShift</p>
+</div>
+
+</body>
+</html>
